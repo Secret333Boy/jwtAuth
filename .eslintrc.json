@@ -1,0 +1,37 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "es2021": true,
+    "jest": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "metarhia",
+    "plugin:react/recommended",
+    "react-app",
+    "react-app/jest",
+    "plugin:prettier/recommended"
+  ],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "plugins": ["react", "prettier", "sonarjs", "jest"],
+  "settings": {
+    "react": {
+      "version": "latest"
+    }
+  },
+  "rules": {
+    "arrow-parens": ["error", "always"],
+    "comma-dangle": "off",
+    "handle-callback-err": "off",
+    "consistent-return": "off",
+    "sonarjs/no-duplicate-string": "off",
+    "react/prop-types": ["off"]
+  }
+}
