@@ -19,7 +19,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --passWithNoTests && npm run lint",
     "eject": "react-scripts eject",
     "lint": "eslint . --ignore-path .gitignore && prettier -c \"**/*.js\" \"**/*.json\" \"**/*.md\" \"**/*.yml\"",
     "lint:fix": "eslint . --ignore-path .gitignore --fix && prettier --write \"**/*.js\" \"**/*.json\" \"**/*.md\" \"**/*.yml\"",
