@@ -5,7 +5,6 @@ module.exports = (req, res) => {
       res.status(401).send('Unauthorized');
       return;
     }
-
     res.status(200).json({ data: 'Secret data' });
   } catch (e) {
     res.status(500).json(e);
