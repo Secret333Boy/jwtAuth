@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { createHmac, randomUUID } = require('crypto');
 const { createClient } = require('urql');
 const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 const client = createClient({
   url: process.env.hasuraURL,
   fetchOptions: {
@@ -11,13 +12,41 @@ const client = createClient({
     },
   },
 });
-const transporter = nodemailer.createTransport({
-  service: 'GMAIL',
-  auth: {
-    user: process.env.GMAIL,
-    pass: process.env.GMAIL_PASS,
-  },
-});
+
+const clientId = process.env.clientID;
+const clientSecret = process.env.clientSecret;
+const redirectURI = process.env.redirectURI;
+const refreshToken = process.env.refreshToken;
+const oAuth2Client = new google.auth.OAuth2(
+  clientId,
+  clientSecret,
+  redirectURI
+);
+// eslint-disable-next-line camelcase
+oAuth2Client.setCredentials({ refresh_token: refreshToken });
+let accessToken = null;
+let transporter = null;
+const renewTransporter = async () => {
+  try {
+    accessToken = await oAuth2Client.getAccessToken();
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      secure: true,
+      auth: {
+        type: 'OAuth2',
+        user: process.env.GMAIL,
+        clientId,
+        clientSecret,
+        refreshToken,
+        accessToken,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+  }
+};
+setInterval(renewTransporter, 4000 * 1000);
+
 const setNewUser = `
 mutation setNewUser($email: String = "", $password: String = "", $activationLink: String = "") {
   insert_user(objects: {email: $email, password: $password, activationLink: $activationLink}) {
@@ -60,6 +89,7 @@ module.exports = async (req, res) => {
     await client
       .mutation(setNewToken, { email, token: refreshToken })
       .toPromise();
+    await renewTransporter();
     await transporter.sendMail({
       from: `"Unknown company" <${process.env.GMAIL}>`,
       to: email,
@@ -75,5 +105,6 @@ module.exports = async (req, res) => {
     res.status(200).json(accessToken);
   } catch (e) {
     console.error(e);
+    res.status(500).json(e);
   }
 };

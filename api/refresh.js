@@ -37,7 +37,6 @@ const getNewTokens = async (email) => {
     .query(getUserDataByEmail, { email })
     .toPromise();
   const hash = data.user[0].password;
-  console.log(hash);
   const newAccessToken = jwt.sign(
     { email, hash },
     process.env.secretAccessJWTKey,
