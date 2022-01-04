@@ -31,9 +31,12 @@ module.exports = async (req, res) => {
     const hash = createHmac('sha256', process.env.passSecretToken)
       .update(password)
       .digest('hex');
-    const { data } = await client
+    const { data, error } = await client
       .query(getUserDataByEmail, { email })
       .toPromise();
+    if (error) {
+      throw error;
+    }
     const userData = data.user[0];
     if (!userData || userData.email !== email || userData.password !== hash) {
       throw new Error('Credentials are not valid!');
