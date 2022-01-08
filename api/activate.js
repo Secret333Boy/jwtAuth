@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
       .mutation(activateByLink, { activationLink: req.query.l })
       .toPromise();
 
-    res.status(200).send('Success');
+    res.redirect(process.env.VERCEL_URL);
   } catch (e) {
     res.status(500).send('Server error');
     console.error(e);
