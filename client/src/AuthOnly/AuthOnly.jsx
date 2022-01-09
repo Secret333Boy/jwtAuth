@@ -19,7 +19,7 @@ export default function AuthOnly({ children }) {
         setVerified(await valRes.json());
         return;
       }
-      if (valRes.statusText) setMessage(valRes.statusText);
+      if (valRes.statusText && valRes.statusText !== 'Unauthorized') setMessage(valRes.statusText);
       const data = await valRes.json();
       if (data === false && valRes.status === 401) {
         const refRes = await fetch(
