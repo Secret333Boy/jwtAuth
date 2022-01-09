@@ -1,3 +1,4 @@
+require('dotenv').config();
 require('isomorphic-unfetch');
 const jwt = require('jsonwebtoken');
 const { createHmac, randomUUID } = require('crypto');
@@ -11,6 +12,7 @@ const client = createClient({
       'x-hasura-admin-secret': process.env.hasuraSecret,
     },
   },
+  requestPolicy: 'network-only',
 });
 
 const clientId = process.env.clientID;
@@ -47,6 +49,15 @@ const renewTransporter = async () => {
 };
 setInterval(renewTransporter, 4000 * 1000);
 
+const getUserDataByEmail = `
+query getUserDataByEmail($email: String = "") {
+  user(where: {email: {_eq: $email}}) {
+    email
+    password
+    activated
+    activationLink
+  }
+}`;
 const setNewUser = `
 mutation setNewUser($email: String = "", $password: String = "", $activationLink: String = "") {
   insert_user(objects: {email: $email, password: $password, activationLink: $activationLink}) {
@@ -61,11 +72,26 @@ mutation setNewToken($email: String = "", $token: String = "") {
   }
 }
 `;
+
+const emailRegExp = new RegExp(
+  '^((([0-9A-Za-z]{1}[-0-9A-z.]{0,30}[0-9A-Za-z]?)|([0-9А-Яа-я]{1}[-0-9А-я.]{0,30}[0-9А-Яа-я]?))@([-A-Za-z]{1,}.){1,}[-A-Za-z]{2,})$'
+);
 module.exports = async (req, res) => {
   try {
-    const { email, password } = JSON.parse(req.body);
-    if (!email || !password) {
-      res.status(400).send('Registration failed');
+    const { email, password } = req.body;
+    if (!email || !password || !email.match(emailRegExp)) {
+      res.status(400);
+      res.statusMessage = 'Registration failed because of bad data';
+      res.send();
+      return;
+    }
+    const { data, error } = await client
+      .query(getUserDataByEmail, { email })
+      .toPromise();
+    if (data.user[0] || !error) {
+      res.status(401);
+      res.statusMessage = 'User already exists';
+      res.send();
       return;
     }
     const hash = createHmac('sha256', process.env.passSecretToken)
@@ -81,6 +107,12 @@ module.exports = async (req, res) => {
       process.env.secretRefreshJWTKey,
       { expiresIn: '14d' }
     );
+    res.setHeader(
+      'Set-Cookie',
+      `refreshToken=${refreshToken}; Expires=${new Date(
+        Date.now() + 14 * 24 * 60 * 60 * 1000
+      ).toUTCString()}; httpOnly=true; Secure`
+    );
     const activationLink = randomUUID();
     await client
       .mutation(setNewUser, { email, password: hash, activationLink })
@@ -94,14 +126,8 @@ module.exports = async (req, res) => {
       from: `"Unknown company" <${process.env.GMAIL}>`,
       to: email,
       subject: 'Account activation',
-      html: `<b>To activate your account, use this link:</b><br><a href="${process.env.VERCEL_URL}/api/activate?l=${activationLink}">activate</a>`,
+      html: `<b>To activate your account, use this link:</b><br><a href="${process.env.activationEndpoint}?l=${activationLink}">activate</a>`,
     });
-    res.setHeader(
-      'Set-Cookie',
-      `refreshToken=${refreshToken}; Expires=${new Date(
-        Date.now() + 14 * 24 * 60 * 60 * 1000
-      ).toUTCString()}; httpOnly=true; Secure`
-    );
     res.status(200).json(accessToken);
   } catch (e) {
     console.error(e);

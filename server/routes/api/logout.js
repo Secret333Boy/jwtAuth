@@ -5,5 +5,5 @@ module.exports = (req, res) => {
       Date.now()
     ).toUTCString()}; httpOnly=true; Secure`
   );
-  res.status(200).json();
+  res.redirect('/');
 };

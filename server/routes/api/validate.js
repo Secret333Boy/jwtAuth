@@ -8,6 +8,7 @@ const client = createClient({
       'x-hasura-admin-secret': process.env.hasuraSecret,
     },
   },
+  requestPolicy: 'network-only',
 });
 const getUserDataByEmail = `
 query getUserDataByEmail($email: String = "") {
@@ -32,16 +33,19 @@ module.exports = async (req, res) => {
       .toPromise();
     const userData = data.user[0];
     if (!userData || error) {
-      res.status(401).json('Data about user was not found!');
+      res.status(401);
+      res.statusMessage = 'User data was not found';
+      res.send();
       return;
     }
     if (!userData.activated) {
-      res.status(401).json('Account is not activated');
+      res.status(401);
+      res.statusMessage = 'You need to activate your account (sent via email)';
+      res.send();
       return;
     }
     res.status(200).json(true);
   } catch (e) {
     res.status(401).json(false);
-    console.error(e);
   }
 };

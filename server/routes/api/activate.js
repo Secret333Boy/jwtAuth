@@ -7,6 +7,7 @@ const client = createClient({
       'x-hasura-admin-secret': process.env.hasuraSecret,
     },
   },
+  requestPolicy: 'network-only',
 });
 const activateByLink = `
 mutation activateByLink($activationLink: String = "") {

@@ -8,6 +8,7 @@ const client = createClient({
       'x-hasura-admin-secret': process.env.hasuraSecret,
     },
   },
+  requestPolicy: 'network-only',
 });
 const getTokenByEmail = `
 query getTokenByEmail($email: String = "") {
@@ -49,6 +50,7 @@ const getNewTokens = async (email) => {
   );
   return { newAccessToken, newRefreshToken };
 };
+
 module.exports = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
@@ -60,9 +62,11 @@ module.exports = async (req, res) => {
       .toPromise();
     const tokenInDB = data.token[0]?.token;
     if (refreshToken !== tokenInDB || error) {
-      throw new Error('Token is not valid');
+      res.status(401);
+      res.statusMessage = 'Token is not valid';
+      res.json();
+      return;
     }
-
     const { newAccessToken, newRefreshToken } = await getNewTokens(
       tokenData.email
     );
@@ -80,7 +84,8 @@ module.exports = async (req, res) => {
     );
     res.status(200).json(newAccessToken);
   } catch (e) {
-    console.error(e);
-    res.status(500).json();
+    res.status(401);
+    res.statusMessage = String(e);
+    res.json();
   }
 };

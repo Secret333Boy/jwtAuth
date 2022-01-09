@@ -9,6 +9,7 @@ const client = createClient({
       'x-hasura-admin-secret': process.env.hasuraSecret,
     },
   },
+  requestPolicy: 'network-only',
 });
 
 const getUserDataByEmail = `
@@ -23,7 +24,7 @@ query getUserDataByEmail($email: String = "") {
 
 module.exports = async (req, res) => {
   try {
-    const { email, password } = JSON.parse(req.body);
+    const { email, password } = req.body;
     if (!email || !password) {
       res.status(400).send('Logging in failed');
       return;
@@ -39,7 +40,10 @@ module.exports = async (req, res) => {
     }
     const userData = data.user[0];
     if (!userData || userData.email !== email || userData.password !== hash) {
-      throw new Error('Credentials are not valid!');
+      res.status(401);
+      res.statusMessage = 'Credentials are not valid!';
+      res.send();
+      return;
     }
     const accessToken = jwt.sign(
       { email, hash },
@@ -61,7 +65,7 @@ module.exports = async (req, res) => {
     );
     res.status(200).json(accessToken);
   } catch (e) {
-    console.log(e);
-    res.status(500).json();
+    console.error(e);
+    res.status(401).json(e);
   }
 };

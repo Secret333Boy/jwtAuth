@@ -1,0 +1,41 @@
+{
+  "name": "jwt-auth",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "5.0.0",
+    "sass": "^1.45.2",
+    "urql": "^2.0.6"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --watchAll=false --passWithNoTests && npm run lint",
+    "eject": "react-scripts eject",
+    "lint": "eslint . --ignore-path ../.gitignore && prettier --ignore-path ../.gitignore -c \"**/*.js\" \"**/*.json\" \"**/*.md\"",
+    "lint:fix": "eslint . --ignore-path ../.gitignore --fix && prettier --ignore-path ../.gitignore --write \"**/*.js\" \"**/*.json\" \"**/*.md\""
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
