@@ -10,8 +10,8 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 1000,
+  max: 50,
   standardHeaders: true,
   legacyHeaders: false,
 });
