@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://jwt-auth111.herokuapp.com/api/:path*"
+    },
+    {
+      "source": "/api/:path*/",
+      "destination": "https://jwt-auth111.herokuapp.com/api/:path*/"
+    }
+  ]
+}
