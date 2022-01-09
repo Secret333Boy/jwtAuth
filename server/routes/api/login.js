@@ -2,6 +2,7 @@ require('isomorphic-unfetch');
 const jwt = require('jsonwebtoken');
 const { createHmac } = require('crypto');
 const { createClient } = require('urql');
+const computationalEffort = require('./computationalEffort.js');
 const client = createClient({
   url: process.env.hasuraURL,
   fetchOptions: {
@@ -29,9 +30,13 @@ module.exports = async (req, res) => {
       res.status(400).send('Logging in failed');
       return;
     }
-    const hash = createHmac('sha256', process.env.passSecretToken)
-      .update(password)
-      .digest('hex');
+    const hash = await computationalEffort(
+      () =>
+        createHmac('sha256', process.env.passSecretToken)
+          .update(password)
+          .digest('hex'),
+      1000
+    );
     const { data, error } = await client
       .query(getUserDataByEmail, { email })
       .toPromise();

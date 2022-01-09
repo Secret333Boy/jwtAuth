@@ -5,6 +5,7 @@ const { createHmac, randomUUID } = require('crypto');
 const { createClient } = require('urql');
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
+const computationalEffort = require('./computationalEffort');
 const client = createClient({
   url: process.env.hasuraURL,
   fetchOptions: {
@@ -85,18 +86,22 @@ module.exports = async (req, res) => {
       res.send();
       return;
     }
-    const { data, error } = await client
+    const { data } = await client
       .query(getUserDataByEmail, { email })
       .toPromise();
-    if (data.user[0] || !error) {
+    if (data.user[0]) {
       res.status(401);
       res.statusMessage = 'User already exists';
       res.send();
       return;
     }
-    const hash = createHmac('sha256', process.env.passSecretToken)
-      .update(password)
-      .digest('hex');
+    const hash = await computationalEffort(
+      () =>
+        createHmac('sha256', process.env.passSecretToken)
+          .update(password)
+          .digest('hex'),
+      1000
+    );
     const accessToken = jwt.sign(
       { email, hash },
       process.env.secretAccessJWTKey,
