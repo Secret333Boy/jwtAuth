@@ -7,7 +7,9 @@ function App() {
   return (
     <div className="App">
       <AuthOnly>
-        <DataLoader src="/api/data" />
+        <DataLoader
+          src={(process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/data'}
+        />
       </AuthOnly>
     </div>
   );
