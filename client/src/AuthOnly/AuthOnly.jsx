@@ -10,7 +10,7 @@ export default function AuthOnly({ children }) {
   const emailInputRef = useRef();
   const passInputRef = useRef();
   const regInputRef = useRef();
-  fetch('/api/validate', {
+  fetch((process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/validate', {
     method: 'GET',
     headers: { auth: localStorage.getItem('accessToken') },
   })
@@ -22,7 +22,9 @@ export default function AuthOnly({ children }) {
       if (valRes.statusText) setMessage(valRes.statusText);
       const data = await valRes.json();
       if (data === false && valRes.status === 401) {
-        const refRes = await fetch('/api/refresh');
+        const refRes = await fetch(
+          (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/refresh'
+        );
         if (refRes.status === 200) {
           const token = await refRes.json();
           localStorage.setItem('accessToken', token);
@@ -60,13 +62,18 @@ export default function AuthOnly({ children }) {
                 const password = passInputRef.current.value;
                 const reg = regInputRef.current.checked;
                 setLoading(true);
-                fetch(`/api/${reg ? 'register' : 'login'}`, {
-                  method: 'POST',
-                  body: JSON.stringify({ email, password }),
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                })
+                fetch(
+                  (process.env.REACT_APP_BACKEND_ENDPOINT || '') + `/api/${
+                    reg ? 'register' : 'login'
+                  }`,
+                  {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password }),
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                )
                   .then(async (res) => {
                     setLoading(false);
                     if (res.status === 200) {
@@ -102,7 +109,7 @@ export default function AuthOnly({ children }) {
         onClick={(e) => {
           e.preventDefault();
           localStorage.removeItem('accessToken');
-          fetch('/api/logout');
+          fetch((process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/logout');
           window.location.reload();
         }}
       >
