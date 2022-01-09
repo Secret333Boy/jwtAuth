@@ -19,6 +19,7 @@ export default function AuthOnly({ children }) {
         setVerified(await valRes.json());
         return;
       }
+      if (valRes.statusText) setMessage(valRes.statusText);
       const data = await valRes.json();
       if (data === false && valRes.status === 401) {
         const refRes = await fetch('/api/refresh');
@@ -30,8 +31,6 @@ export default function AuthOnly({ children }) {
           console.error(refRes.statusText);
           setVerified(false);
         }
-      } else {
-        setVerified(valRes.statusText);
       }
     })
     .catch((e) => {
