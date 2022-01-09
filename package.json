@@ -43,6 +43,7 @@
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.2",
+    "express-rate-limit": "^6.0.5",
     "googleapis": "^92.0.0",
     "isomorphic-unfetch": "^3.1.0",
     "jsonwebtoken": "^8.5.1",
