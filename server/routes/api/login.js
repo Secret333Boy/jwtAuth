@@ -23,11 +23,13 @@ query getUserDataByEmail($email: String = "") {
   }
 }`;
 
-const updateTokenByEmail = `mutation updateTokenByEmail($email: String = "", $token: String = "") {
-  update_token(where: {email: {_eq: $email}, token: {_eq: $token}}) {
+const setTokenByEmail = `
+mutation setTokenByEmail($token: String = "", $email: String = "") {
+  update_token(where: {email: {_eq: $email}}, _set: {token: $token}) {
     affected_rows
   }
-}`;
+}
+`;
 
 module.exports = async (req, res) => {
   try {
@@ -72,7 +74,7 @@ module.exports = async (req, res) => {
       { expiresIn: '14d' }
     );
     await client
-      .mutation(updateTokenByEmail, { email, token: refreshToken })
+      .mutation(setTokenByEmail, { email, token: refreshToken })
       .toPromise();
     res.setHeader(
       'Set-Cookie',
