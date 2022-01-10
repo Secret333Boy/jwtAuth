@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Message from './Message/Message.jsx';
 import './AuthOnly.scss';
 import spinner from './MkTK.gif';
@@ -7,38 +7,51 @@ export default function AuthOnly({ children }) {
   const [verified, setVerified] = useState(null);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [online, setOnline] = useState(true);
   const emailInputRef = useRef();
   const passInputRef = useRef();
   const regInputRef = useRef();
-  fetch((process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/validate', {
-    method: 'GET',
-    headers: { auth: localStorage.getItem('accessToken') },
-  })
-    .then(async (valRes) => {
-      if (valRes.status === 200) {
-        setVerified(await valRes.json());
-        return;
-      }
-      if (valRes.statusText && valRes.statusText !== 'Unauthorized') setMessage(valRes.statusText);
-      const data = await valRes.json();
-      if (data === false && valRes.status === 401) {
-        const refRes = await fetch(
-          (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/refresh'
-        );
-        if (refRes.status === 200) {
-          const token = await refRes.json();
-          localStorage.setItem('accessToken', token);
-          setVerified(true);
-        } else {
-          console.error(refRes.statusText);
-          setVerified(false);
-        }
-      }
+  window.onoffline = () => {
+    setMessage('You are offline! :(');
+    setOnline(false);
+  };
+  window.ononline = () => {
+    setMessage(null);
+    setOnline(true);
+  };
+  useEffect(() => {
+    fetch((process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/validate', {
+      method: 'GET',
+      headers: { auth: localStorage.getItem('accessToken') },
     })
-    .catch((e) => {
-      setVerified(false);
-      console.error(e);
-    });
+      .then(async (valRes) => {
+        if (valRes.status === 200) {
+          setVerified(await valRes.json());
+          return;
+        }
+        if (valRes.statusText && valRes.statusText !== 'Unauthorized')
+          setMessage(valRes.statusText);
+        const data = await valRes.json();
+        if (data === false && valRes.status === 401) {
+          const refRes = await fetch(
+            (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/refresh'
+          );
+          if (refRes.status === 200) {
+            const token = await refRes.json();
+            localStorage.setItem('accessToken', token);
+            setVerified(true);
+          } else {
+            console.error(refRes.statusText);
+            setVerified(false);
+          }
+        }
+      })
+      .catch((e) => {
+        setVerified(false);
+        console.error(e);
+      });
+  }, []);
+
   if (verified === false) {
     return (
       <>
@@ -50,7 +63,9 @@ export default function AuthOnly({ children }) {
             <input type="checkbox" name="reg" ref={regInputRef} />
             <label htmlFor="reg">register?</label>
           </div>
-          {loading ? (
+          {!online ? (
+            <div>Offline...</div>
+          ) : loading ? (
             <div className="spinner">
               <img src={spinner} alt="" />
             </div>
@@ -63,9 +78,8 @@ export default function AuthOnly({ children }) {
                 const reg = regInputRef.current.checked;
                 setLoading(true);
                 fetch(
-                  (process.env.REACT_APP_BACKEND_ENDPOINT || '') + `/api/${
-                    reg ? 'register' : 'login'
-                  }`,
+                  (process.env.REACT_APP_BACKEND_ENDPOINT || '') +
+                    `/api/${reg ? 'register' : 'login'}`,
                   {
                     method: 'POST',
                     body: JSON.stringify({ email, password }),

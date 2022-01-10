@@ -23,11 +23,20 @@ query getUserDataByEmail($email: String = "") {
   }
 }`;
 
+const updateTokenByEmail = `mutation updateTokenByEmail($email: String = "", $token: String = "") {
+  update_token(where: {email: {_eq: $email}, token: {_eq: $token}}) {
+    affected_rows
+  }
+}`;
+
 module.exports = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      res.status(400).send('Logging in failed');
+      res.status(400);
+      res.statusMessage =
+        'Logging in failed due to bad data (email and/or password)';
+      res.json();
       return;
     }
     const hash = await computationalEffort(
@@ -62,6 +71,9 @@ module.exports = async (req, res) => {
       process.env.secretRefreshJWTKey,
       { expiresIn: '14d' }
     );
+    await client
+      .mutation(updateTokenByEmail, { email, token: refreshToken })
+      .toPromise();
     res.setHeader(
       'Set-Cookie',
       `refreshToken=${refreshToken}; Expires=${new Date(

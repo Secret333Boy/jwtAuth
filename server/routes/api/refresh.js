@@ -54,6 +54,11 @@ const getNewTokens = async (email) => {
 module.exports = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      res.status(401);
+      res.statusMessage = 'There is no refreshToken!';
+      res.json();
+    }
     const tokenData = jwt.verify(refreshToken, process.env.secretRefreshJWTKey);
     const { data, error } = await client
       .query(getTokenByEmail, {
@@ -63,7 +68,7 @@ module.exports = async (req, res) => {
     const tokenInDB = data.token[0]?.token;
     if (refreshToken !== tokenInDB || error) {
       res.status(401);
-      res.statusMessage = 'Token is not valid';
+      res.statusMessage = 'Token expired or is not valid';
       res.json();
       return;
     }
@@ -84,8 +89,8 @@ module.exports = async (req, res) => {
     );
     res.status(200).json(newAccessToken);
   } catch (e) {
-    res.status(401);
-    res.statusMessage = String(e);
+    res.status(500);
+    res.statusMessage = 'Error while refreshing';
     res.json();
   }
 };
