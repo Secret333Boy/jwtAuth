@@ -120,11 +120,11 @@ export default function AuthOnly({ children }) {
     <div>
       {children}
       <button
-        onClick={(e) => {
+        onClick={async (e) => {
           e.preventDefault();
           localStorage.removeItem('accessToken');
           try {
-            fetch(
+            await fetch(
               (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/logout'
             );
           } catch (e) {
