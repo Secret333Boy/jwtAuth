@@ -46,9 +46,8 @@ export default function AuthOnly({ children }) {
           }
         }
       })
-      .catch((e) => {
+      .catch(() => {
         setVerified(false);
-        console.error(e);
       });
   }, []);
 
