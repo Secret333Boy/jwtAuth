@@ -13,6 +13,8 @@ export default function DataLoader({ src }) {
     } catch (e) {
       console.error(e);
     }
+  }).catch((e) => {
+    console.error(e);
   });
 
   return <div>{data}</div>;

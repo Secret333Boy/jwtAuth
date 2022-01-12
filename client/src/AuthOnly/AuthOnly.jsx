@@ -123,7 +123,13 @@ export default function AuthOnly({ children }) {
         onClick={(e) => {
           e.preventDefault();
           localStorage.removeItem('accessToken');
-          fetch((process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/logout');
+          try {
+            fetch(
+              (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/logout'
+            );
+          } catch (e) {
+            console.error(e);
+          }
           window.location.reload();
         }}
       >
