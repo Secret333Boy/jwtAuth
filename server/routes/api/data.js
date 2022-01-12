@@ -36,6 +36,7 @@ module.exports = async (req, res) => {
       !data.user[0].activated
     ) {
       res.redirect('/api/logout');
+      return;
     }
     res.status(200).json({ data: `Secret data for ${email}` });
   } catch (e) {
