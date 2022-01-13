@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
       .toPromise();
     res.redirect('/');
   } catch (e) {
-    res.status(500).send('Server error');
+    res.status(500).send({ error: e });
     console.error(e);
   }
 };

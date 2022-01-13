@@ -91,6 +91,6 @@ module.exports = async (req, res) => {
   } catch (e) {
     res.status(500);
     res.statusMessage = 'Error while refreshing';
-    res.json();
+    res.json({ error: e });
   }
 };

@@ -19,6 +19,7 @@ export default function AuthOnly({ children }) {
     setMessage(null);
     setOnline(true);
   };
+
   const refresh = async () => {
     const refRes = await fetch(
       (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/refresh'
@@ -33,6 +34,7 @@ export default function AuthOnly({ children }) {
     }
     return refRes;
   };
+
   useEffect(() => {
     fetch((process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/validate', {
       method: 'GET',
@@ -53,6 +55,36 @@ export default function AuthOnly({ children }) {
       });
   }, []);
 
+  const sendAuthData = () => {
+    const email = emailInputRef.current.value;
+    const password = passInputRef.current.value;
+    const reg = regInputRef.current.checked;
+    setLoading(true);
+    fetch(
+      (process.env.REACT_APP_BACKEND_ENDPOINT || '') +
+        `/api/${reg ? 'register' : 'login'}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+      .then(async (res) => {
+        setLoading(false);
+        if (res.status === 200) {
+          const accessToken = await res.json();
+          localStorage?.setItem('accessToken', accessToken);
+          window.location.reload();
+        } else {
+          setMessage(res.statusText);
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  };
   if (verified === false) {
     return (
       <>
@@ -74,34 +106,7 @@ export default function AuthOnly({ children }) {
             <button
               onClick={(e) => {
                 e.preventDefault();
-                const email = emailInputRef.current.value;
-                const password = passInputRef.current.value;
-                const reg = regInputRef.current.checked;
-                setLoading(true);
-                fetch(
-                  (process.env.REACT_APP_BACKEND_ENDPOINT || '') +
-                    `/api/${reg ? 'register' : 'login'}`,
-                  {
-                    method: 'POST',
-                    body: JSON.stringify({ email, password }),
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                  }
-                )
-                  .then(async (res) => {
-                    setLoading(false);
-                    if (res.status === 200) {
-                      const accessToken = await res.json();
-                      localStorage?.setItem('accessToken', accessToken);
-                      window.location.reload();
-                    } else {
-                      setMessage(res.statusText);
-                    }
-                  })
-                  .catch((e) => {
-                    console.error(e);
-                  });
+                sendAuthData();
               }}
             >
               Log in
@@ -131,7 +136,7 @@ export default function AuthOnly({ children }) {
           } catch (e) {
             console.error(e);
           }
-          window.location.reload();
+          document.location.reload();
         }}
       >
         Log out

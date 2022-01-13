@@ -1,4 +1,4 @@
-module.exports = async (func, ms) =>
+module.exports = (func, ms) =>
   new Promise((resolve, reject) => {
     try {
       const data = func();

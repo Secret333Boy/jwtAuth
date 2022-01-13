@@ -80,11 +80,12 @@ module.exports = async (req, res) => {
       'Set-Cookie',
       `refreshToken=${refreshToken}; Expires=${new Date(
         Date.now() + 14 * 24 * 60 * 60 * 1000
-      ).toUTCString()}; httpOnly=true; Secure`
+      ).toUTCString()}; httpOnly; Secure; path="/api"`
     );
     res.status(200).json(accessToken);
   } catch (e) {
     console.error(e);
-    res.status(401).json(e);
+    res.status(401);
+    res.json({ error: e });
   }
 };

@@ -116,7 +116,7 @@ module.exports = async (req, res) => {
       'Set-Cookie',
       `refreshToken=${refreshToken}; Expires=${new Date(
         Date.now() + 14 * 24 * 60 * 60 * 1000
-      ).toUTCString()}; httpOnly=true; Secure`
+      ).toUTCString()}; httpOnly; Secure; path="/api"`
     );
     const activationLink = randomUUID();
     await client
@@ -136,6 +136,6 @@ module.exports = async (req, res) => {
     res.status(200).json(accessToken);
   } catch (e) {
     console.error(e);
-    res.status(500).json(e);
+    res.status(500).json({ error: e });
   }
 };
