@@ -19,10 +19,24 @@ export default function AuthOnly({ children }) {
     setMessage(null);
     setOnline(true);
   };
+  const refresh = async () => {
+    const refRes = await fetch(
+      (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/refresh'
+    );
+    if (refRes.status === 200) {
+      const token = await refRes.json();
+      localStorage?.setItem('accessToken', token);
+      setVerified(true);
+    } else {
+      console.error(refRes.statusText);
+      setVerified(false);
+    }
+    return refRes;
+  };
   useEffect(() => {
     fetch((process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/validate', {
       method: 'GET',
-      headers: { auth: localStorage.getItem('accessToken') },
+      headers: { auth: localStorage?.getItem('accessToken') },
     })
       .then(async (valRes) => {
         if (valRes.status === 200) {
@@ -32,19 +46,7 @@ export default function AuthOnly({ children }) {
         if (valRes.statusText && valRes.statusText !== 'Unauthorized')
           setMessage(valRes.statusText);
         const data = await valRes.json();
-        if (data === false && valRes.status === 401) {
-          const refRes = await fetch(
-            (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/refresh'
-          );
-          if (refRes.status === 200) {
-            const token = await refRes.json();
-            localStorage.setItem('accessToken', token);
-            setVerified(true);
-          } else {
-            console.error(refRes.statusText);
-            setVerified(false);
-          }
-        }
+        if (data === false && valRes.status === 401) await refresh();
       })
       .catch(() => {
         setVerified(false);
@@ -91,7 +93,7 @@ export default function AuthOnly({ children }) {
                     setLoading(false);
                     if (res.status === 200) {
                       const accessToken = await res.json();
-                      localStorage.setItem('accessToken', accessToken);
+                      localStorage?.setItem('accessToken', accessToken);
                       window.location.reload();
                     } else {
                       setMessage(res.statusText);
@@ -121,7 +123,7 @@ export default function AuthOnly({ children }) {
       <button
         onClick={async (e) => {
           e.preventDefault();
-          localStorage.removeItem('accessToken');
+          localStorage?.removeItem('accessToken');
           try {
             await fetch(
               (process.env.REACT_APP_BACKEND_ENDPOINT || '') + '/api/logout'
