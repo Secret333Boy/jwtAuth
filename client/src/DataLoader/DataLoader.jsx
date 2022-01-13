@@ -19,7 +19,6 @@ export default function DataLoader({ src }) {
         }
       })
       .catch((e) => {
-        setLoading(false);
         console.error(e);
       })
       .finally(() => {
