@@ -12,7 +12,6 @@ export default function DataLoader({ src }) {
       },
     })
       .then(async (res) => {
-        setLoading(false);
         try {
           setData((await res.json()).data);
         } catch (e) {
