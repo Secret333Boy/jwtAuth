@@ -72,7 +72,6 @@ export default function AuthOnly({ children }) {
       }
     )
       .then(async (res) => {
-        setLoading(false);
         if (res.status === 200) {
           const accessToken = await res.json();
           localStorage?.setItem('accessToken', accessToken);
@@ -83,6 +82,9 @@ export default function AuthOnly({ children }) {
       })
       .catch((e) => {
         console.error(e);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
   if (verified === false) {
