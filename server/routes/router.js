@@ -1,0 +1,17 @@
+const { Router } = require('express');
+const registerHandler = require('./api/register.js');
+const loginHandler = require('./api/login');
+const logoutHandler = require('./api/logout');
+const activateHandler = require('./api/activate');
+const dataHandler = require('./api/data');
+const refreshHandler = require('./api/refresh');
+const validateHandler = require('./api/validate');
+const router = new Router();
+router.post('/api/register', registerHandler);
+router.post('/api/login', loginHandler);
+router.get('/api/logout', logoutHandler);
+router.get('/api/activate', activateHandler);
+router.get('/api/data', dataHandler);
+router.get('/api/refresh', refreshHandler);
+router.get('/api/validate', validateHandler);
+module.exports = router;
